@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1033859424853",
+    "project_id": "signin-8fb6a",
+    "storage_bucket": "signin-8fb6a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1033859424853:android:7db7c3931243ac7c92aadc",
+        "android_client_info": {
+          "package_name": "com.example.firebase_signin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJKu77gyC9jKnqY8RtaNZ5423Hf08hXws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1033859424853:android:41c794a9271590a192aadc",
+        "android_client_info": {
+          "package_name": "com.example.glitzproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJKu77gyC9jKnqY8RtaNZ5423Hf08hXws"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
