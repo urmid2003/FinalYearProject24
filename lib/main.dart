@@ -1,11 +1,14 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'screens/signin_screen.dart';
+import 'package:glitzproject/src/view/screen/signin_screen.dart';
 import 'package:flutter/material.dart';
+import 'dart:ui' show PointerDeviceKind;
+import 'package:glitzproject/core/app_theme.dart';
+import 'package:firebase_core/firebase_core.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: FirebaseOptions(
+    options: const FirebaseOptions(
       apiKey: 'AIzaSyAJKu77gyC9jKnqY8RtaNZ5423Hf08hXws',
       appId: '1:1033859424853:android:7db7c3931243ac7c92aadc',
       messagingSenderId: '1033859424853',
@@ -19,24 +22,18 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {
+          PointerDeviceKind.mouse,
+          PointerDeviceKind.touch,
+        },
       ),
+      debugShowCheckedModeBanner: false,
       home: const SignInScreen(),
+      theme: AppTheme.lightAppTheme,
     );
   }
 }
