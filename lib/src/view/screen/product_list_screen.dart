@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:glitzproject/core/app_data.dart';
@@ -6,6 +8,7 @@ import 'package:glitzproject/src/controller/product_controller.dart';
 import 'package:glitzproject/src/view/widget/product_grid_view.dart';
 import 'package:glitzproject/src/view/widget/list_item_selector.dart';
 import 'signin_screen.dart';
+
 enum AppbarActionType { leading, trailing }
 
 final ProductController controller = Get.put(ProductController());
@@ -172,9 +175,34 @@ class ProductListScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  "Hello  username!",
-                  style: Theme.of(context).textTheme.displayLarge,
+                FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+                    if (snapshot.hasData && snapshot.data != null) {
+                      Map<String, dynamic>? userData = snapshot.data!.data() as Map<
+                          String,
+                          dynamic>?; // Cast the return value of data() to Map<String, dynamic> or null
+                      if (userData != null &&
+                          userData.containsKey('username')) {
+                        String username = userData['username']
+                            as String; // Access the 'username' field from the user data
+                        return Text(
+                          "Hello $username!",
+                          style: Theme.of(context).textTheme.displayLarge,
+                        );
+                      }
+                    }
+                    return Text(
+                      "Hello Guest!",
+                      style: Theme.of(context).textTheme.displayLarge,
+                    );
+                  },
                 ),
                 Text(
                   "Lets gets somethings?",

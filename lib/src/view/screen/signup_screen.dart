@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'reusable_widget.dart';
 import 'home_screen.dart';
@@ -59,18 +60,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(
                   height: 20,
                 ),
-                firebaseUIButton(context, "Sign Up", () {
-                  FirebaseAuth.instance
-                      .createUserWithEmailAndPassword(
-                          email: _emailTextController.text,
-                          password: _passwordTextController.text)
-                      .then((value) {
+                firebaseUIButton(context, "Sign Up", () async {
+                  try {
+                    // Create user in Firebase Authentication
+                    UserCredential userCredential = await FirebaseAuth.instance
+                        .createUserWithEmailAndPassword(
+                      email: _emailTextController.text,
+                      password: _passwordTextController.text,
+                    );
+
+                    // Add user data to Firestore
+                    await FirebaseFirestore.instance
+                        .collection('users')
+                        .doc(userCredential
+                            .user!.uid) // Using UID as document ID
+                        .set({
+                      'username': _userNameTextController.text,
+                      'email': _emailTextController.text,
+                      // Add other user data here if needed
+                    });
+
                     print("Created New Account");
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => HomeScreen()));
-                  }).onError((error, stackTrace) {
-                    print("Error ${error.toString()}");
-                  });
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomeScreen(),
+                      ),
+                    );
+                  } catch (error) {
+                    print("Error $error");
+                  }
                 })
               ],
             ),

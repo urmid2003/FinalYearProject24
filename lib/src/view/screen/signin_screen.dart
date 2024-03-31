@@ -55,7 +55,7 @@ class _SignInScreenState extends State<SignInScreen> {
                           email: _emailTextController.text,
                           password: _passwordTextController.text)
                       .then((value) {
-                    Navigator.push(context,
+                    Navigator.pushReplacement(context,
                         MaterialPageRoute(builder: (context) => HomeScreen()));
                   }).onError((error, stackTrace) {
                     print("Error ${error.toString()}");
@@ -103,10 +103,7 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
         onPressed: () => Navigator.push(
             context, MaterialPageRoute(builder: (context) => ResetPassword())),
-  
       ),
-      
     );
-    
   }
 }
