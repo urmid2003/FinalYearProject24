@@ -44,6 +44,10 @@ dependencies:
   bottom_navy_bar: ^6.0.0
   flutter_rating_bar: ^4.0.1
   smooth_page_indicator: ^1.1.0
+  cloud_firestore: ^4.15.8
+  firebase_storage: ^11.6.9
+  image_picker: ^1.0.7
+  permission_handler: ^11.3.1
 
 dev_dependencies:
   flutter_test:
