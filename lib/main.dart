@@ -14,6 +14,7 @@ void main() async {
       messagingSenderId: '1033859424853',
       projectId: 'signin-8fb6a',
       authDomain: 'signin-8fb6a.firebaseapp.com',
+      storageBucket: 'signin-8fb6a.appspot.com'
     ),
   );
   runApp(const MyApp());
