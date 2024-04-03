@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:glitzproject/core/app_data.dart';
 import 'package:glitzproject/core/app_color.dart';
 import 'package:glitzproject/src/controller/product_controller.dart';
+import 'package:glitzproject/src/view/screen/db.dart';
 import 'package:glitzproject/src/view/widget/product_grid_view.dart';
 import 'package:glitzproject/src/view/widget/list_item_selector.dart';
+import 'package:sqflite/sqflite.dart';
 import 'signin_screen.dart';
 
 enum AppbarActionType { leading, trailing }
@@ -14,15 +16,9 @@ enum AppbarActionType { leading, trailing }
 final ProductController controller = Get.put(ProductController());
 
 class ProductListScreen extends StatelessWidget {
-  const ProductListScreen({super.key});
+  const ProductListScreen({Key? key}) : super(key: key);
 
   Widget appBarActionButton(AppbarActionType type) {
-    IconData icon = Icons.ac_unit_outlined;
-
-    if (type == AppbarActionType.trailing) {
-      icon = Icons.search;
-    }
-
     return Container(
       margin: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -32,8 +28,10 @@ class ProductListScreen extends StatelessWidget {
       child: IconButton(
         padding: const EdgeInsets.all(8),
         constraints: const BoxConstraints(),
-        onPressed: () {},
-        icon: Icon(icon, color: Colors.black),
+        onPressed: () {
+          Get.to(() => MyApp());
+        },
+        icon: const Icon(Icons.search, color: Colors.black),
       ),
     );
   }
@@ -48,7 +46,6 @@ class ProductListScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               appBarActionButton(AppbarActionType.leading),
-              appBarActionButton(AppbarActionType.trailing),
             ],
           ),
         ),
@@ -60,70 +57,74 @@ class ProductListScreen extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          shrinkWrap: true,
-          scrollDirection: Axis.horizontal,
-          itemCount: AppData.recommendedProducts.length,
-          itemBuilder: (_, index) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 20),
-              child: Container(
-                width: 350,
-                decoration: BoxDecoration(
-                  color: AppData.recommendedProducts[index].cardBackgroundColor,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Only Personalized Gifts',
-                            style: Theme.of(context)
-                                .textTheme
-                                .displaySmall
-                                ?.copyWith(color: Colors.white),
-                          ),
-                          const SizedBox(height: 8),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppData
-                                  .recommendedProducts[index]
-                                  .buttonBackgroundColor,
-                              elevation: 0,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 18),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18),
-                              ),
-                            ),
-                            child: Text(
-                              "Only in Glitz",
-                              style: TextStyle(
-                                color: AppData.recommendedProducts[index]
-                                    .buttonTextColor!,
-                              ),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    Image.asset(
-                      'assets/images/shopping.png',
-                      height: 125,
-                      fit: BoxFit.cover,
-                    )
-                  ],
-                ),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        itemCount: AppData.recommendedProducts.length,
+        itemBuilder: (_, index) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: Container(
+              width: 350,
+              decoration: BoxDecoration(
+                color: AppData.recommendedProducts[index].cardBackgroundColor,
+                borderRadius: BorderRadius.circular(15),
               ),
-            );
-          }),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Only Personalized Gifts',
+                          style: Theme.of(context)
+                              .textTheme
+                              .displaySmall
+                              ?.copyWith(color: Colors.white),
+                        ),
+                        const SizedBox(height: 8),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => MyApp()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppData.recommendedProducts[index]
+                                .buttonBackgroundColor,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(horizontal: 18),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                          ),
+                          child: Text(
+                            "Only in Glitz",
+                            style: TextStyle(
+                              color: AppData
+                                  .recommendedProducts[index].buttonTextColor!,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Image.asset(
+                    'assets/images/shopping.png',
+                    height: 125,
+                    fit: BoxFit.cover,
+                  )
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -226,4 +227,3 @@ class ProductListScreen extends StatelessWidget {
     );
   }
 }
-//code ends

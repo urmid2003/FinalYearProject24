@@ -239,7 +239,8 @@ class CartScreenState extends State<CartScreen> {
                   var options = {
                     'key': "rzp_test_xvlZZBGCo0SzL0",
                     // amount will be multiple of 100
-                    'amount': controller.totalPrice.value * 100, //So it pays 500
+                    'amount':
+                        controller.totalPrice.value * 100, //So it pays 500
                     'name': 'Glitz Pvt ltd',
                     'description': 'Demo',
                     'timeout': 300, // in seconds

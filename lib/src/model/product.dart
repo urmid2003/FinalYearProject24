@@ -17,6 +17,8 @@ class Product {
 
   int get quantity => _quantity;
 
+  get cart => null;
+
   set quantity(int newQuantity) {
     if (newQuantity >= 0) _quantity = newQuantity;
   }
