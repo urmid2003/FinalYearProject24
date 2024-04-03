@@ -1,110 +1,92 @@
-import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart' as Path;
 
-Future<void> main() async {
-  await Firebase.initializeApp(
-      options: FirebaseOptions(
-          apiKey: 'AIzaSyAJKu77gyC9jKnqY8RtaNZ5423Hf08hXws',
-          appId: '1:1033859424853:android:7db7c3931243ac7c92aadc',
-          messagingSenderId: '1033859424853',
-          projectId: 'signin-8fb6a',
-          storageBucket: 'signin-8fb6a.appspot.com'));
-  runApp(MyApp());
+import 'signin_screen.dart';
+
+void main() {
+  runApp(ProfileScreen());
 }
 
-class MyApp extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({Key? key}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Image Upload to Firebase',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: ImageUploadScreen(),
-    );
-  }
+  _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-class ImageUploadScreen extends StatefulWidget {
-  const ImageUploadScreen({Key? key}) : super(key: key);
-  @override
-  _ImageUploadScreenState createState() => _ImageUploadScreenState();
-}
-
-class _ImageUploadScreenState extends State<ImageUploadScreen> {
-  File? _image;
-  final picker = ImagePicker();
-  String _uploadedFileURL = '';
-
-  Future getImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
-
-  Future uploadImageToFirebase() async {
-    if (_image == null) return;
-
-    Reference storageReference = FirebaseStorage.instance
-        .ref()
-        .child('images/${Path.basename(_image!.path)}');
-    UploadTask uploadTask = storageReference.putFile(_image!);
-    await uploadTask.whenComplete(() async {
-      print('File uploaded');
-      await storageReference.getDownloadURL().then((fileURL) {
-        setState(() {
-          _uploadedFileURL = fileURL;
-        });
-      });
-    });
-  }
+class _ProfileScreenState extends State<ProfileScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Image Upload to Firebase'),
+        title: Text('Profile'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            _image != null
-                ? Image.file(
-                    _image!,
-                    height: 200,
-                  )
-                : Text('No image selected.'),
-            SizedBox(
-              height: 20,
+          children: [
+            StreamBuilder<DocumentSnapshot>(
+              stream: _firestore
+                  .collection('users')
+                  .doc(_auth.currentUser!.uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
+                var userData = snapshot.data!.data() as Map<String, dynamic>;
+                return Card(
+                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: ListTile(
+                    title: Text(
+                      'Username:',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      '${userData['username']}',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                );
+              },
             ),
+            Card(
+              margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: ListTile(
+                title: Text(
+                  'Email:',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  _auth.currentUser!.email!,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+            SizedBox(height: 20),
             ElevatedButton(
-              onPressed: getImage,
-              child: Text('Choose Image'),
+              onPressed: () async {
+                try {
+                  await _auth.signOut();
+                  Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(
+                      builder: (context) => SignInScreen(), // Navigate to the sign-in page
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Failed to sign out. Please try again.'),
+                    ),
+                  );
+                }
+              },
+              child: Text('Sign Out'),
             ),
-            SizedBox(
-              height: 20,
-            ),
-            ElevatedButton(
-              onPressed: uploadImageToFirebase,
-              child: Text('Upload Image'),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            _uploadedFileURL.isNotEmpty
-                ? Text('Uploaded Image URL: $_uploadedFileURL')
-                : Container(),
           ],
         ),
       ),
