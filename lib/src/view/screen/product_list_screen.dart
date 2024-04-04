@@ -90,7 +90,7 @@ class ProductListScreen extends StatelessWidget {
                           onPressed: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => MyApp()),
+                              MaterialPageRoute(builder: (context) => FirestoreExample()),
                             );
                           },
                           style: ElevatedButton.styleFrom(

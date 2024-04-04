@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:glitzproject/src/view/screen/cart_analytics.dart';
+import 'package:glitzproject/src/view/screen/login_analytics.dart';
 
 import 'cart_screen.dart';
 
@@ -41,15 +43,42 @@ class _FirestoreExampleState extends State<FirestoreExample> {
         title: Text('Firestore Example'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            _addProduct();
-          },
-          child: Text('Add Product'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                _addProduct();
+              },
+              child: Text('Add Product'),
+            ),
+            SizedBox(height: 20), // Add some space between buttons
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => CartAnalyticsScreen()),
+                );
+              },
+              child: Text('View Cart'),
+            ),
+            SizedBox(height: 20), // Add some space between buttons
+            ElevatedButton(
+              onPressed: () {
+                _addLoginActivity();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginActivityScreen()),
+                );
+              },
+              child: Text('View login activity'),
+            ),
+          ],
         ),
       ),
     );
   }
+
 
   Future<void> _addProduct() async {
     try {
@@ -113,3 +142,25 @@ class _FirestoreExampleState extends State<FirestoreExample> {
     }
   }
 }
+Future<void> _addLoginActivity() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Get user ID and email from Firebase Authentication
+        String userId = user.uid;
+        String? email = user.email;
+
+        // Add a new document to the "loginActivity" collection with current timestamp
+        await FirebaseFirestore.instance.collection('loginActivity').add({
+          'userId': userId,
+          'email': email,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+        print('Login activity added successfully.');
+      } else {
+        print('No user signed in.');
+      }
+    } catch (e) {
+      print('Error adding login activity: $e');
+    }
+  }
