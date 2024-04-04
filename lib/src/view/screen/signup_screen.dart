@@ -16,6 +16,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _passwordTextController = TextEditingController();
   TextEditingController _emailTextController = TextEditingController();
   TextEditingController _userNameTextController = TextEditingController();
+  TextEditingController _addressTextController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,9 +34,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
               gradient: LinearGradient(colors: [
-            hexStringToColor("CB2B93"),
-            hexStringToColor("9546C4"),
-            hexStringToColor("5E61F4")
+            hexStringToColor("FA9B9B"),
+            hexStringToColor("DF5337"),
+            hexStringToColor("B56B1C")
           ], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
           child: SingleChildScrollView(
               child: Padding(
@@ -47,6 +48,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 reusableTextField("Enter UserName", Icons.person_outline, false,
                     _userNameTextController),
+                const SizedBox(
+                  height: 20,
+                ),
+                reusableTextField("Enter Address", Icons.lock_outlined, false,
+                    _addressTextController),
                 const SizedBox(
                   height: 20,
                 ),
@@ -76,6 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             .user!.uid) // Using UID as document ID
                         .set({
                       'username': _userNameTextController.text,
+                      'address': _addressTextController.text,
                       'email': _emailTextController.text,
                       // Add other user data here if needed
                     });
