@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:glitzproject/src/view/screen/cart_analytics.dart';
+import 'package:glitzproject/src/view/screen/favorite_analytics.dart';
+import 'package:glitzproject/src/view/screen/home_screen.dart';
+import 'package:glitzproject/src/view/screen/login_analytics.dart';
 
-import 'cart_screen.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -41,75 +45,44 @@ class _FirestoreExampleState extends State<FirestoreExample> {
         title: Text('Firestore Example'),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            _addProduct();
-          },
-          child: Text('Add Product'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => FavoriteItemsScreen()),
+                );
+              },
+              child: Text('Show TOP 3 favorite items'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CartAnalyticsScreen()),
+                );
+              },
+              child: Text('Show TOP 5 Cart items'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => LoginActivityScreen()),
+                );
+              },
+              child: Text('Most user Login Activity'),
+            ),
+          ],
         ),
       ),
     );
-  }
-
-  Future<void> _addProduct() async {
-    try {
-      // Get the current user
-      User? user = _auth.currentUser;
-
-      if (user != null) {
-        // Retrieve user data from the 'users' collection
-        QuerySnapshot userSnapshot =
-            await usersCollection.where('email', isEqualTo: user.email).get();
-        if (userSnapshot.docs.isNotEmpty) {
-          String userId = userSnapshot.docs.first.id;
-          Map<String, dynamic> userData =
-              userSnapshot.docs.first.data() as Map<String, dynamic>;
-
-          List<Map<String, dynamic>> favoriteItems = [];
-
-          for (var product in controller.filteredProducts) {
-            if (product.isFavorite) {
-              favoriteItems.add({
-                'name': product.name,
-                'price': product.price,
-                // Add other properties as needed
-              });
-            }
-          }
-
-          List<Map<String, dynamic>> cartProductsData = [];
-
-          // Iterate over cartProducts and add each one to Firestore
-          for (var product in controller.cartProducts) {
-            cartProductsData.add({
-              'name': product.name,
-              'price': product.price,
-              // Add other properties as needed
-            });
-          }
-
-          // Add favorite items to the 'products' collection
-          for (var product in controller.filteredProducts) {
-            if (product.isFavorite) {
-              await productsCollection.add({
-                'userId': userId,
-                'email': user.email,
-                'username': userData['username'],
-                'isFavorite': favoriteItems,
-                'cart': cartProductsData,
-              });
-            }
-          }
-
-          print('Product added successfully!');
-        } else {
-          print('User not found!');
-        }
-      } else {
-        print('User not logged in!');
-      }
-    } catch (e) {
-      print('Error adding product: $e');
-    }
   }
 }

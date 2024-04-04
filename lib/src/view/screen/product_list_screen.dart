@@ -1,19 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
-import 'package:flutter/material.dart';
 import 'package:glitzproject/core/app_data.dart';
 import 'package:glitzproject/core/app_color.dart';
 import 'package:glitzproject/src/controller/product_controller.dart';
 import 'package:glitzproject/src/view/screen/db.dart';
 import 'package:glitzproject/src/view/widget/product_grid_view.dart';
 import 'package:glitzproject/src/view/widget/list_item_selector.dart';
-import 'package:sqflite/sqflite.dart';
-import 'signin_screen.dart';
+
+final ProductController controller = ProductController();
 
 enum AppbarActionType { leading, trailing }
-
-final ProductController controller = Get.put(ProductController());
 
 class ProductListScreen extends StatelessWidget {
   const ProductListScreen({Key? key}) : super(key: key);
@@ -87,11 +85,13 @@ class ProductListScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: (){
+                            _addProduct();
+                            _addLoginActivity(); // Call the method to add product
                             Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => MyApp()),
-                            );
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => MyApp()));
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppData.recommendedProducts[index]
@@ -212,18 +212,112 @@ class ProductListScreen extends StatelessWidget {
                 _recommendedProductListView(context),
                 _topCategoriesHeader(context),
                 _topCategoriesListView(),
-                GetBuilder(builder: (ProductController controller) {
-                  return ProductGridView(
-                    items: controller.filteredProducts,
-                    likeButtonPressed: (index) => controller.isFavorite(index),
-                    isPriceOff: (product) => controller.isPriceOff(product),
-                  );
-                }),
+                GetBuilder<ProductController>(
+  init: ProductController(), // Initialize the controller
+  builder: (controller) {
+    if (controller == null) {
+      return CircularProgressIndicator(); // Return a loading indicator if controller is null
+    }
+    return ProductGridView(
+      items: controller.filteredProducts ?? [], // Use null-aware operators to avoid null errors
+      likeButtonPressed: (index) => controller.isFavorite(index),
+      isPriceOff: (product) => controller.isPriceOff(product),
+    );
+  },
+),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _addProduct() async {
+    try {
+      // Get the current user
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        // Retrieve user data from the 'users' collection
+        QuerySnapshot userSnapshot = await FirebaseFirestore.instance
+            .collection('users')
+            .where('email', isEqualTo: user.email)
+            .get();
+        if (userSnapshot.docs.isNotEmpty) {
+          String userId = userSnapshot.docs.first.id;
+          Map<String, dynamic> userData =
+              userSnapshot.docs.first.data() as Map<String, dynamic>;
+
+          List<Map<String, dynamic>> favoriteItems = [];
+
+          // Assuming you have access to 'controller.filteredProducts' and 'controller.cartProducts'
+          for (var product in controller.filteredProducts) {
+            if (product.isFavorite) {
+              favoriteItems.add({
+                'name': product.name,
+                'price': product.price,
+                // Add other properties as needed
+              });
+            }
+          }
+
+          List<Map<String, dynamic>> cartProductsData = [];
+
+          // Iterate over cartProducts and add each one to Firestore
+          for (var product in controller.cartProducts) {
+            cartProductsData.add({
+              'name': product.name,
+              'price': product.price,
+              // Add other properties as needed
+            });
+          }
+
+          // Add favorite items to the 'products' collection
+          for (var product in controller.filteredProducts) {
+            if (product.isFavorite) {
+              await FirebaseFirestore.instance.collection('userdata').add({
+                'userId': userId,
+                'email': user.email,
+                'username': userData['username'],
+                'isFavorite': favoriteItems,
+                'cart': cartProductsData,
+              });
+            }
+          }
+
+          print('Product added successfully!');
+        } else {
+          print('User not found!');
+        }
+      } else {
+        print('User not logged in!');
+      }
+    } catch (e) {
+      print('Error adding product: $e');
+    }
+  }
+
+  Future<void> _addLoginActivity() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Get user ID and email from Firebase Authentication
+        String userId = user.uid;
+        String? email = user.email;
+
+        // Add a new document to the "loginActivity" collection with current timestamp
+        await FirebaseFirestore.instance.collection('loginActivity').add({
+          'userId': userId,
+          'email': email,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+        print('Login activity added successfully.');
+      } else {
+        print('No user signed in.');
+      }
+    } catch (e) {
+      print('Error adding login activity: $e');
+    }
   }
 }
