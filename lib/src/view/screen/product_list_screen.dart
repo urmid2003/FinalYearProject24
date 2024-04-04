@@ -9,7 +9,6 @@ import 'package:glitzproject/src/view/screen/db.dart';
 import 'package:glitzproject/src/view/widget/product_grid_view.dart';
 import 'package:glitzproject/src/view/widget/list_item_selector.dart';
 
-
 final ProductController controller = ProductController();
 
 enum AppbarActionType { leading, trailing }
@@ -86,9 +85,9 @@ class ProductListScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton(
-                          onPressed: () async {
-                            await _addProduct();
-                            await _addLoginActivity(); // Call the method to add product
+                          onPressed: (){
+                            _addProduct();
+                            _addLoginActivity(); // Call the method to add product
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -213,13 +212,19 @@ class ProductListScreen extends StatelessWidget {
                 _recommendedProductListView(context),
                 _topCategoriesHeader(context),
                 _topCategoriesListView(),
-                GetBuilder(builder: (ProductController controller) {
-                  return ProductGridView(
-                    items: controller.filteredProducts,
-                    likeButtonPressed: (index) => controller.isFavorite(index),
-                    isPriceOff: (product) => controller.isPriceOff(product),
-                  );
-                }),
+                GetBuilder<ProductController>(
+  init: ProductController(), // Initialize the controller
+  builder: (controller) {
+    if (controller == null) {
+      return CircularProgressIndicator(); // Return a loading indicator if controller is null
+    }
+    return ProductGridView(
+      items: controller.filteredProducts ?? [], // Use null-aware operators to avoid null errors
+      likeButtonPressed: (index) => controller.isFavorite(index),
+      isPriceOff: (product) => controller.isPriceOff(product),
+    );
+  },
+),
               ],
             ),
           ),
