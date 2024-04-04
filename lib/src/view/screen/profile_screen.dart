@@ -126,22 +126,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ),
-                    
-                  Card(
-                      margin:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      child: ListTile(
-                        title: Text(
-                          'Address:',
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        subtitle: Text(
-                          '${userData['address']}', // Display address here
-                          style: TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    )
                   ],
                 );
               },
