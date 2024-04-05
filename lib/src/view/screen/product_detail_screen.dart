@@ -170,10 +170,8 @@ class ProductDetailScreen extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: product.isAvailable
-                              ? () => controller.addToCart(product)
-                              : null,
-                          child: const Text("Add to cart"),
+                          onPressed: product.isAvailable ? () => controller.addToCart(product) : null,
+  child: const Text("Add to cart"),
                         ),
                       )
                     ],

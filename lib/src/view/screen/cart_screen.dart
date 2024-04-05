@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:glitzproject/core/extensions.dart';
@@ -12,6 +14,8 @@ final ProductController controller = Get.put(ProductController());
 class CartScreenState extends State<CartScreen> {
   late Razorpay _razorpay;
   late TextEditingController amountController;
+
+
 
   @override
   void initState() {
@@ -154,8 +158,11 @@ class CartScreenState extends State<CartScreen> {
                     children: [
                       IconButton(
                         splashRadius: 10.0,
-                        onPressed: () =>
-                            controller.decreaseItemQuantity(product),
+                        onPressed: () {
+                    controller.decreaseItemQuantity(product);
+                    
+                    
+                  },
                         icon: const Icon(
                           Icons.remove,
                           color: Color(0xFFEC6813),
@@ -179,8 +186,10 @@ class CartScreenState extends State<CartScreen> {
                       ),
                       IconButton(
                         splashRadius: 10.0,
-                        onPressed: () =>
-                            controller.increaseItemQuantity(product),
+                        onPressed: () {
+                    controller.increaseItemQuantity(product);
+                    
+                  },
                         icon: const Icon(Icons.add, color: Color(0xFFEC6813)),
                       ),
                     ],

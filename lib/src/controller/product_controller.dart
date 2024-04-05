@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:glitzproject/core/app_data.dart';
 import 'package:glitzproject/src/model/product.dart';
@@ -34,30 +36,112 @@ class ProductController extends GetxController {
     update();
   }
 
-  void addToCart(Product product) {
-    product.quantity++;
-    cartProducts.add(product);
-    cartProducts.assignAll(cartProducts);
-    calculateTotalPrice();
-  }
+  void addToCart(Product product) async {
+  // Increment the quantity of the product
+  product.quantity++;
+  
+  // Add the product to the cart list in the local state
+  cartProducts.add(product);
+  
+  // Update the cart in Firestore
+  await _updateCartInFirebase(product);
+  
+  // Recalculate the total price
+  calculateTotalPrice();
+}
 
-  void increaseItemQuantity(Product product) {
+Future<void> _updateCartInFirebase(Product product) async {
+  try {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+    
+    // Add the product to the cart in Firestore
+    await userRef.update({
+      'cart': FieldValue.arrayUnion([{
+        'name': product.name,
+        'price': product.price,
+        'quantity': product.quantity,
+        // Add any other relevant details here
+      }]),
+    });
+  } catch (e) {
+    print('Error updating cart in Firebase: $e');
+  }
+}
+
+
+  void increaseItemQuantity(Product product) async{
     product.quantity++;
+    await _updateCartItemQuantityInFirebase(product);
     calculateTotalPrice();
     update();
   }
 
-  void decreaseItemQuantity(Product product) {
+
+  void decreaseItemQuantity(Product product) async {
+     if (product.quantity >1) {
+      product.quantity--;
+      await _updateCartItemQuantityInFirebase(product);
+    }
+      else if (product.quantity == 1 ) {
+       product.quantity--;
+      await _updateCartItemQuantityInFirebase(product);
+
+    }
+    else if (product.quantity == 0 ) {
     product.quantity--;
+     await removeCartItemFromFirebase(product);
+      
+    }
+    else {
+
+    }
+  
     calculateTotalPrice();
     update();
   }
+
+
+ Future<void> removeCartItemFromFirebase(Product product) async {
+  try {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+    
+    if (product.quantity <= 0) {
+      // If quantity is zero or less, remove the item from the cart
+      await userRef.update({
+        'cart': FieldValue.arrayRemove([
+          {'name': product.name, 'price': product.price}
+        ]),
+      });
+    }
+  } catch (e) {
+    print('Error removing cart item from Firebase: $e');
+  }
+}
+
+
+
+   Future<void> _updateCartItemQuantityInFirebase(Product product) async {
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+      await userRef.update({
+        'cart': cartProducts.map((product) => {'name': product.name, 'price': product.price, 'quantity': product.quantity}).toList(),
+      });
+    } catch (e) {
+      print('Error updating cart in Firebase: $e');
+    }
+  }
+
 
   bool isPriceOff(Product product) => product.off != null;
 
   bool get isEmptyCart => cartProducts.isEmpty;
 
   bool isNominal(Product product) => product.sizes?.numerical != null;
+
+
 
   void calculateTotalPrice() {
     totalPrice.value = 0;
