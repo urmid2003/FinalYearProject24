@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'reusable_widget.dart';
@@ -16,6 +17,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController _passwordTextController = TextEditingController();
   TextEditingController _emailTextController = TextEditingController();
   TextEditingController _userNameTextController = TextEditingController();
+  TextEditingController _addressTextController = TextEditingController(); // Added
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,6 +63,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(
                   height: 20,
                 ),
+                // New address field
+                reusableTextField("Enter Address", Icons.location_on, false,
+                    _addressTextController),
+                const SizedBox(
+                  height: 20,
+                ),
                 firebaseUIButton(context, "Sign Up", () async {
                   try {
                     // Create user in Firebase Authentication
@@ -77,6 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         .set({
                       'username': _userNameTextController.text,
                       'email': _emailTextController.text,
+                      'address': _addressTextController.text, // Added address
                       // Add other user data here if needed
                     });
 

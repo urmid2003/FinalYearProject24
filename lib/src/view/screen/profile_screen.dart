@@ -1,3 +1,4 @@
+
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -99,14 +100,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 }
                 var userData = snapshot.data!.data() as Map<String, dynamic>;
                 return Column(
-                 children: [
+                  children: [
                     Card(
                       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                       child: ListTile(
                         title: Text(
                           'Username:',
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
+),
                         subtitle: Text(
                           '${userData['username']}',
                           style: TextStyle(fontSize: 16),
@@ -122,6 +123,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         subtitle: Text(
                           _auth.currentUser!.email!,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                    Card(
+                      margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: ListTile(
+                        title: Text(
+                          'Address:',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          '${userData['address']}',
                           style: TextStyle(fontSize: 16),
                         ),
                       ),

@@ -1,52 +1,145 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:glitzproject/core/app_data.dart';
 import 'package:glitzproject/core/app_color.dart';
 import 'package:glitzproject/src/controller/product_controller.dart';
 import 'package:glitzproject/src/view/screen/db.dart';
 import 'package:glitzproject/src/view/widget/product_grid_view.dart';
 import 'package:glitzproject/src/view/widget/list_item_selector.dart';
-import 'package:sqflite/sqflite.dart';
 import 'signin_screen.dart';
 
 enum AppbarActionType { leading, trailing }
 
 final ProductController controller = Get.put(ProductController());
 
-class ProductListScreen extends StatelessWidget {
+class ProductListScreen extends StatefulWidget {
   const ProductListScreen({Key? key}) : super(key: key);
 
-  Widget appBarActionButton(AppbarActionType type) {
-    return Container(
-      margin: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        color: AppColor.lightGrey,
-      ),
-      child: IconButton(
-        padding: const EdgeInsets.all(8),
-        constraints: const BoxConstraints(),
-        onPressed: () {
-          Get.to(() => MyApp());
-        },
-        icon: const Icon(Icons.search, color: Colors.black),
-      ),
-    );
+  @override
+  _ProductListScreenState createState() => _ProductListScreenState();
+}
+
+class _ProductListScreenState extends State<ProductListScreen> {
+  bool isFavorite = false;
+
+  void _addToFavorites(String productName, double productPrice, int index) async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+    await userRef.update({
+      'isFavorite': FieldValue.arrayUnion([{
+        'name': productName,
+        'price': productPrice,
+      }]),
+    });
   }
 
-  PreferredSize get _appBar {
-    return PreferredSize(
-      preferredSize: const Size.fromHeight(150),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              appBarActionButton(AppbarActionType.leading),
-            ],
+  void _removeFromFavorites(String productName, double productPrice, int index) async {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentReference userRef = FirebaseFirestore.instance.collection('users').doc(userId);
+    await userRef.update({
+      'isFavorite': FieldValue.arrayRemove([{
+        'name': productName,
+        'price': productPrice,
+      }]),
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    controller.getAllItems();
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.menu,
+            color: Colors.black,
+          ),
+          onPressed: () {},
+        ),
+        actions: [
+          Container(
+            margin: EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: AppColor.lightGrey,
+            ),
+            child: IconButton(
+              padding: EdgeInsets.all(8),
+              constraints: BoxConstraints(),
+              onPressed: () {
+                Get.to(() => MyApp());
+              },
+              icon: Icon(
+                Icons.search,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance
+                      .collection('users')
+                      .doc(FirebaseAuth.instance.currentUser!.uid)
+                      .get(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    }
+                    if (snapshot.hasData && snapshot.data != null) {
+                      Map<String, dynamic>? userData = snapshot.data!.data() as Map<String, dynamic>?; // Cast the return value of data() to Map<String, dynamic> or null
+                      if (userData != null && userData.containsKey('username')){
+                        String username = userData['username'] as String; // Access the 'username' field from the user data
+                        return Text(
+                          "Hello $username!",
+                          style: Theme.of(context).textTheme.displayLarge,
+                        );
+                      }
+                    }
+                    return Text(
+                      "Hello Guest!",
+                      style: Theme.of(context).textTheme.displayLarge,
+                    );
+                  },
+                ),
+                Text(
+                  "Lets gets somethings?",
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                _recommendedProductListView(context),
+                _topCategoriesHeader(context),
+                _topCategoriesListView(),
+                GetBuilder(builder: (ProductController controller) {
+                  return ProductGridView(
+                    items: controller.filteredProducts,
+                    likeButtonPressed: (index) {
+                      final product = controller.filteredProducts[index];
+                      if (product.isFavorite) {
+                        _removeFromFavorites(product.name, product.price.toDouble(), index);
+                      } else {
+                        _addToFavorites(product.name, product.price.toDouble(), index);
+                      }
+                      setState(() {
+                        product.isFavorite = !product.isFavorite;
+                      });
+                    },
+                    isPriceOff: (product) => controller.isPriceOff(product),
+                  );
+                }),
+              ],
+            ),
           ),
         ),
       ),
@@ -80,10 +173,7 @@ class ProductListScreen extends StatelessWidget {
                       children: [
                         Text(
                           'Only Personalized Gifts',
-                          style: Theme.of(context)
-                              .textTheme
-                              .displaySmall
-                              ?.copyWith(color: Colors.white),
+                          style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white),
                         ),
                         const SizedBox(height: 8),
                         ElevatedButton(
@@ -124,7 +214,7 @@ class ProductListScreen extends StatelessWidget {
             ),
           );
         },
-      ),
+     ),
     );
   }
 
@@ -136,7 +226,7 @@ class ProductListScreen extends StatelessWidget {
         children: [
           Text(
             "Top categories",
-            style: Theme.of(context).textTheme.headlineMedium,
+           style: Theme.of(context).textTheme.headlineMedium,
           ),
           TextButton(
             onPressed: () {},
@@ -160,70 +250,6 @@ class ProductListScreen extends StatelessWidget {
       onItemPressed: (index) {
         controller.filterItemsByCategory(index);
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    controller.getAllItems();
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: _appBar,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                FutureBuilder<DocumentSnapshot>(
-                  future: FirebaseFirestore.instance
-                      .collection('users')
-                      .doc(FirebaseAuth.instance.currentUser!.uid)
-                      .get(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    }
-                    if (snapshot.hasData && snapshot.data != null) {
-                      Map<String, dynamic>? userData = snapshot.data!.data() as Map<
-                          String,
-                          dynamic>?; // Cast the return value of data() to Map<String, dynamic> or null
-                      if (userData != null &&
-                          userData.containsKey('username')) {
-                        String username = userData['username']
-                            as String; // Access the 'username' field from the user data
-                        return Text(
-                          "Hello $username!",
-                          style: Theme.of(context).textTheme.displayLarge,
-                        );
-                      }
-                    }
-                    return Text(
-                      "Hello Guest!",
-                      style: Theme.of(context).textTheme.displayLarge,
-                    );
-                  },
-                ),
-                Text(
-                  "Lets gets somethings?",
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                _recommendedProductListView(context),
-                _topCategoriesHeader(context),
-                _topCategoriesListView(),
-                GetBuilder(builder: (ProductController controller) {
-                  return ProductGridView(
-                    items: controller.filteredProducts,
-                    likeButtonPressed: (index) => controller.isFavorite(index),
-                    isPriceOff: (product) => controller.isPriceOff(product),
-                  );
-                }),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
