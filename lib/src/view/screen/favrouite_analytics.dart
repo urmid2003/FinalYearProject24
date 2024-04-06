@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class CartAnalyticsScreen extends StatelessWidget {
+class FavouriteAnalyticsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Cart Analytics'),
+        title: Text('Favourite Analytics'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('users').snapshots(),
@@ -18,7 +18,6 @@ class CartAnalyticsScreen extends StatelessWidget {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          List<String> cartItems = [];
           Map<String, int> itemCounter = {};
 
           // Iterate over the documents in the collection
@@ -26,17 +25,18 @@ class CartAnalyticsScreen extends StatelessWidget {
             if (doc.exists) {
               Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
 
-              // Check if the document contains a 'cart' field
-              if (data != null && data.containsKey('cart')) {
-                List<dynamic> cart = data['cart'];
+              // Check if the document contains an 'isFavorite' array
+              if (data!= null && data.containsKey('isFavorite')) {
+                List<dynamic> favorites = data['isFavorite'];
 
-                // Iterate over the cart items in the document
-                for (var item in cart) {
-                  String itemName = item['name'];
-                  if (itemCounter.containsKey(itemName)) {
-                    itemCounter[itemName] = itemCounter[itemName]! + 1;
-                  } else {
-                    itemCounter[itemName] = 1;
+                // Iterate over the favorite items in the document
+                for (var item in favorites) {
+                  if (item is String) {
+                    if (itemCounter.containsKey(item)) {
+                      itemCounter[item] = itemCounter[item]! + 1;
+                    } else {
+                      itemCounter[item] = 1;
+                    }
                   }
                 }
               }
@@ -45,22 +45,22 @@ class CartAnalyticsScreen extends StatelessWidget {
 
           // Sort the items based on count
           var sortedItems = itemCounter.entries.toList()
-            ..sort((a, b) => b.value.compareTo(a.value));
+           ..sort((a, b) => b.value.compareTo(a.value));
 
-          // Extract the top 5 items
+          // Extract the top 3 items
           List<String> topItems = [];
-          for (var i = 0; i < sortedItems.length && i < 5; i++) {
+          for (var i = 0; i < sortedItems.length && i < 3; i++) {
             topItems.add(sortedItems[i].key);
           }
 
           if (topItems.isEmpty) {
-            return Center(child: Text('No cart items found.'));
+            return Center(child: Text('No favorite items found.'));
           }
 
           return ListView.builder(
             itemCount: topItems.length,
             itemBuilder: (context, index) {
-              // Display top 5 cart item names in the list
+              // Display top 3 favorite item names in the list
               return Card(
                 margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(

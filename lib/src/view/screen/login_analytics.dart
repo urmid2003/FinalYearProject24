@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:charts_flutter/flutter.dart' as charts; // Import charts_flutter package
 
 class LoginActivityScreen extends StatelessWidget {
   @override
@@ -26,72 +27,106 @@ class LoginActivityScreen extends StatelessWidget {
           final Map<String, int> userLoginCounts = {};
           for (var doc in loginDocs) {
             String userId = doc['userId'];
-            if (userLoginCounts.containsKey(userId)) {
-              userLoginCounts[userId] = userLoginCounts[userId]! + 1;
-            } else {
-              userLoginCounts[userId] = 1;
-            }
+            userLoginCounts.update(userId, (value) => value + 1, ifAbsent: () => 1);
           }
 
-          // Sort the users by login count
-          List<MapEntry<String, int>> sortedUsers = userLoginCounts.entries.toList();
-          sortedUsers.sort((a, b) => b.value.compareTo(a.value));
+          // Create a list of series for the bar graph
+          List<charts.Series<UserLoginData, String>> series = [
+            charts.Series(
+              id: 'LoginActivity',
+              data: userLoginCounts.entries.map((entry) => UserLoginData(entry.key, entry.value)).toList(),
+              domainFn: (UserLoginData data, _) => data.email,
+              measureFn: (UserLoginData data, _) => data.loginCount,
+              colorFn: (UserLoginData data, _) => _getUserColor(data.email), // Use custom color function
+            )
+          ];
 
-          // Display the top 3 users with the most logins
-          return ListView.builder(
-            itemCount: sortedUsers.length > 3 ? 3 : sortedUsers.length,
-            itemBuilder: (context, index) {
-              final userId = sortedUsers[index].key;
-              final loginCount = sortedUsers[index].value;
+          // Create a bar chart with selection behavior
+          var chart = charts.BarChart(
+            series,
+            vertical: true, // Display bars vertically
+            animate: true, // Animation for the chart
+            behaviors: [
+              charts.ChartTitle(
+                'Login Activity',
+                subTitle: 'Number of logins per user',
+                behaviorPosition: charts.BehaviorPosition.top,
+                titleStyleSpec: charts.TextStyleSpec(fontSize: 20),
+              ),
+            ],
+            selectionModels: [
+              charts.SelectionModelConfig(
+                type: charts.SelectionModelType.info,
+                changedListener: (model) => _onSelectionChanged(model, context),
+              )
+            ],
+            domainAxis: charts.OrdinalAxisSpec(
+              renderSpec: charts.SmallTickRendererSpec(
+                labelStyle: charts.TextStyleSpec(fontSize: 14),
+              ),
+            ),
+            primaryMeasureAxis: charts.NumericAxisSpec(
+              renderSpec: charts.SmallTickRendererSpec(
+                labelStyle: charts.TextStyleSpec(fontSize: 14),
+              ),
+            ),
+          );
 
-              // Return a ListTile for each user
-              return Card(
-                child: ListTile(
-                  title: FutureBuilder<DocumentSnapshot>(
-                    future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
-                    builder: (context, userSnapshot) {
-                      if (userSnapshot.connectionState == ConnectionState.waiting) {
-                        return Text('Loading...');
-                      }
-                      if (userSnapshot.hasError) {
-                        return Text('Error: ${userSnapshot.error}');
-                      }
-
-                      // Extract the username from the user document
-                      String username = userSnapshot.data!['username'];
-                      return Text('User ID: $userId - Username: $username');
-                    },
-                  ),
-                  subtitle: Text('Login Count: $loginCount'),
-                ),
-              );
-            },
+          // Display the chart with increased padding
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: chart,
           );
         },
       ),
     );
   }
 
-  Future<void> logSignInActivity() async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        // Get user ID and email from Firebase Authentication
-        String userId = user.uid;
-        String? email = user.email;
-
-        // Add a new document to the "loginActivity" collection with current timestamp
-        await FirebaseFirestore.instance.collection('loginActivity').add({
-          'userId': userId,
-          'email': email,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-        print('Sign-in activity logged successfully.');
-      } else {
-        print('No user signed in.');
-      }
-    } catch (e) {
-      print('Error logging sign-in activity: $e');
+  void _onSelectionChanged(charts.SelectionModel model, BuildContext context) async {
+    final selectedDatum = model.selectedDatum;
+    if (selectedDatum.isNotEmpty) {
+      final userId = selectedDatum.first.datum.email;
+      final email = await _getUserEmail(userId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Email: $email'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
+
+  Future<String> _getUserEmail(String userId) async {
+    try {
+      final userSnapshot = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+      return userSnapshot.data()?['email'] ?? 'Email not found';
+    } catch (e) {
+      print('Error fetching user email: $e');
+      return 'Email not found';
+    }
+  }
+
+  charts.Color _getUserColor(String email) {
+    // Define a list of colors
+    final colors = [
+      charts.MaterialPalette.blue.shadeDefault,
+      charts.MaterialPalette.red.shadeDefault,
+      charts.MaterialPalette.green.shadeDefault,
+      charts.MaterialPalette.purple.shadeDefault,
+      charts.MaterialPalette.yellow.shadeDefault,
+    ];
+
+    // Get the index of the color based on the email
+    final index = email.codeUnits.fold(0, (sum, codeUnit) => sum + codeUnit) % colors.length;
+
+    return colors[index];
+  }
+}
+
+// Model class for user login data
+class UserLoginData {
+  final String email;
+  final int loginCount;
+
+  UserLoginData(this.email, this.loginCount);
 }

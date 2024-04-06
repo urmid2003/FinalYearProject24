@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:glitzproject/src/view/screen/cart_analytics.dart';
 import 'package:glitzproject/src/view/screen/login_analytics.dart';
-
+import 'package:glitzproject/src/view/screen/favrouite_analytics.dart';
+import 'package:glitzproject/src/view/screen/mostlogin.dart';
 import 'cart_screen.dart';
 
 void main() {
@@ -46,13 +47,7 @@ class _FirestoreExampleState extends State<FirestoreExample> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                _addProduct();
-              },
-              child: Text('Add Product'),
-            ),
-            SizedBox(height: 20), // Add some space between buttons
+           
             ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -73,6 +68,27 @@ class _FirestoreExampleState extends State<FirestoreExample> {
               },
               child: Text('View login activity'),
             ),
+             SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => FavouriteAnalyticsScreen()),
+                );
+              },
+              child: Text('Top Favrouite items'),
+            ),
+            SizedBox(height: 20),
+             ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MostLoginScreen()),
+                );
+              },
+              child: Text('Most login time'),
+            ),
+            SizedBox(height: 20),
           ],
         ),
       ),
@@ -152,6 +168,7 @@ Future<void> _addLoginActivity() async {
 
         // Add a new document to the "loginActivity" collection with current timestamp
         await FirebaseFirestore.instance.collection('loginActivity').add({
+          
           'userId': userId,
           'email': email,
           'timestamp': FieldValue.serverTimestamp(),
