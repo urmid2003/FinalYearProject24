@@ -86,8 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         .set({
                       'username': _userNameTextController.text,
                       'email': _emailTextController.text,
-                      'address': _addressTextController.text, // Added address
-                      // Add other user data here if needed
+                      'address': _addressTextController.text, 
                     });
 
                     print("Created New Account");

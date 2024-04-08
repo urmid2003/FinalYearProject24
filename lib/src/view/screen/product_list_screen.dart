@@ -193,7 +193,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ),
                           ),
                           child: Text(
-                            "Only in Glitz",
+                            "Recommendations",
                             style: TextStyle(
                               color: AppData
                                   .recommendedProducts[index].buttonTextColor!,

@@ -55,7 +55,7 @@ class _FirestoreExampleState extends State<FirestoreExample> {
                   MaterialPageRoute(builder: (context) => CartAnalyticsScreen()),
                 );
               },
-              child: Text('View Cart'),
+              child: Text('Top Selling Products'),
             ),
             SizedBox(height: 20), // Add some space between buttons
             ElevatedButton(
@@ -76,7 +76,7 @@ class _FirestoreExampleState extends State<FirestoreExample> {
                   MaterialPageRoute(builder: (context) => FavouriteAnalyticsScreen()),
                 );
               },
-              child: Text('Top Favrouite items'),
+              child: Text('Top Recommended Products'),
             ),
             SizedBox(height: 20),
              ElevatedButton(
@@ -86,7 +86,7 @@ class _FirestoreExampleState extends State<FirestoreExample> {
                   MaterialPageRoute(builder: (context) => MostLoginScreen()),
                 );
               },
-              child: Text('Most login time'),
+              child: Text('Peak Login time analysis'),
             ),
             SizedBox(height: 20),
           ],

@@ -6,7 +6,7 @@ class FavouriteAnalyticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Favourite Analytics'),
+        title: Text('Top 3 Favorite Items'),
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('users').snapshots(),
@@ -26,16 +26,17 @@ class FavouriteAnalyticsScreen extends StatelessWidget {
               Map<String, dynamic>? data = doc.data() as Map<String, dynamic>?;
 
               // Check if the document contains an 'isFavorite' array
-              if (data!= null && data.containsKey('isFavorite')) {
+              if (data != null && data.containsKey('isFavorite')) {
                 List<dynamic> favorites = data['isFavorite'];
 
                 // Iterate over the favorite items in the document
                 for (var item in favorites) {
-                  if (item is String) {
-                    if (itemCounter.containsKey(item)) {
-                      itemCounter[item] = itemCounter[item]! + 1;
+                  if (item is Map<String, dynamic>) {
+                    String itemName = item['name'];
+                    if (itemCounter.containsKey(itemName)) {
+                      itemCounter[itemName] = itemCounter[itemName]! + 1;
                     } else {
-                      itemCounter[item] = 1;
+                      itemCounter[itemName] = 1;
                     }
                   }
                 }
