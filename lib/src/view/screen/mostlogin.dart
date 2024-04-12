@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class MostLoginScreen extends StatefulWidget {
   @override
@@ -13,32 +14,54 @@ class _MostLoginScreenState extends State<MostLoginScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchLoginData();
+  }
 
-    DateTime time;
-    for (int i = 0; i < 24; i++) {
-      if (i < 10) {
-        time = DateTime.parse('2022-01-01 0${i}:00:00');
-      } else {
-        time = DateTime.parse('2022-01-01 ${i}:00:00');
-      }
-      chartData.add(_ChartData(time, i * 5));
+  Future<void> _fetchLoginData() async {
+    final QuerySnapshot? loginSnapshot = await FirebaseFirestore.instance.collection('loginActivity').get();
+    if (loginSnapshot != null) {
+      Map<DateTime, int> loginCountByTime = {};
+
+      // Count login occurrences for each time
+      loginSnapshot.docs.forEach((doc) {
+        Timestamp? timestamp = doc['timestamp'];
+        if (timestamp != null) {
+          DateTime loginTime = timestamp.toDate();
+          // Truncate minutes and seconds to group logins by hour
+          DateTime truncatedTime = DateTime(loginTime.year, loginTime.month, loginTime.day, loginTime.hour);
+          loginCountByTime.update(truncatedTime, (value) => value + 1, ifAbsent: () => 1);
+        }
+      });
+
+      // Prepare data for chart
+      loginCountByTime.forEach((time, count) {
+        chartData.add(_ChartData(time, count));
+      });
+
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: SfCartesianChart(
-        primaryXAxis: CategoryAxis(
-          maximumLabelWidth: 80,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Login Activity'),
+      ),
+      body: Container(
+        padding: EdgeInsets.all(16),
+        child: SfCartesianChart(
+          primaryXAxis: DateTimeAxis(),
+          series: <CartesianSeries<_ChartData, DateTime>>[
+            ColumnSeries<_ChartData, DateTime>(
+              dataSource: chartData,
+              xValueMapper: (_ChartData data, _) => data.time,
+              yValueMapper: (_ChartData data, _) => data.count,
+              dataLabelSettings: DataLabelSettings(isVisible: true),
+            ),
+          ],
+          tooltipBehavior: TooltipBehavior(enable: true),
         ),
-        series: <CartesianSeries<_ChartData, DateTime>>[
-          ColumnSeries<_ChartData, DateTime>(
-            dataSource: chartData,
-            xValueMapper: (_ChartData data, _) => data.time,
-            yValueMapper: (_ChartData data, _) => data.count,
-          ),
-        ],
       ),
     );
   }
