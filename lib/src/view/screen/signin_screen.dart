@@ -39,12 +39,12 @@ class _SignInScreenState extends State<SignInScreen> {
                   height: 30,
                 ),
                 reusableTextField("Enter Email ID", Icons.person_outline, false,
-                    _emailTextController),
+                    _emailTextController, ),
                 const SizedBox(
                   height: 20,
                 ),
                 reusableTextField("Enter Password", Icons.lock_outline, true,
-                    _passwordTextController),
+                    _passwordTextController, ),
                 const SizedBox(
                   height: 5,
                 ),
