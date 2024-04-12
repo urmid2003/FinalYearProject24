@@ -1,6 +1,6 @@
 import 'package:glitzproject/src/model/product_size_type.dart';
 
-enum ProductType { all, watch, mobile, headphone, tablet, tv }
+enum ProductType { all, jewellery , customised , neon , photoframe , caricature }
 
 class Product {
   String name;

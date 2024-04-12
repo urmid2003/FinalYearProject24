@@ -59,6 +59,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         MaterialPageRoute(builder: (context) => HomeScreen()));
                   }).onError((error, stackTrace) {
                     print("Error ${error.toString()}");
+                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('Invalid email or password'),
+                        ));
                   });
                 }),
                 signUpOption()

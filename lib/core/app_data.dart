@@ -32,7 +32,7 @@ class AppData {
       ],
       isFavorite: true,
       rating: 1,
-      type: ProductType.mobile,
+      type: ProductType.jewellery,
     ),
     Product(
       name: 'Personalized Name Lamp',
@@ -48,7 +48,7 @@ class AppData {
       ],
       isFavorite: false,
       rating: 4,
-      type: ProductType.tablet,
+      type: ProductType.neon,
     ),
     Product(
       name: 'Personalized Cute Caricature',
@@ -64,7 +64,7 @@ class AppData {
       ],
       isFavorite: false,
       rating: 3,
-      type: ProductType.tablet,
+      type: ProductType.caricature,
     ),
     Product(
       name: 'Handmade Wooden Photo Stand',
@@ -87,7 +87,7 @@ class AppData {
           Categorical(CategoricalType.large, false),
         ],
       ),
-      type: ProductType.watch,
+      type: ProductType.photoframe,
     ),
     Product(
       name: 'Personalized Mug Picture/Name',
@@ -106,7 +106,7 @@ class AppData {
       sizes: ProductSizeType(
         numerical: [Numerical('41', true), Numerical('45', false)],
       ),
-      type: ProductType.watch,
+      type: ProductType.customised,
     ),
     Product(
         name: 'EGD Acrylic Spotify Plaque',
@@ -123,7 +123,7 @@ class AppData {
         ],
         isFavorite: false,
         rating: 2,
-        type: ProductType.headphone),
+        type: ProductType.neon),
     Product(
       name: 'Customized Neon Name Sign',
       price: 497,
@@ -144,7 +144,7 @@ class AppData {
           Numerical('55', false)
         ],
       ),
-      type: ProductType.tv,
+      type: ProductType.neon,
     ),
     Product(
       name: 'Personalized Photo Cushion',
@@ -166,7 +166,7 @@ class AppData {
         ],
       ),
       rating: 2,
-      type: ProductType.tv,
+      type: ProductType.customised,
     ),
   ];
 
@@ -177,24 +177,24 @@ class AppData {
       Icons.all_inclusive,
     ),
     ProductCategory(
-      ProductType.mobile,
+      ProductType.customised,
       false,
       Icons.art_track,
     ),
-    ProductCategory(ProductType.watch, false, Icons.backup_table_outlined),
+    ProductCategory(ProductType.photoframe, false, Icons.backup_table_outlined),
     
     ProductCategory(
-      ProductType.tablet,
+      ProductType.caricature,
       false,
       Icons.assignment_ind_sharp,
     ),
     ProductCategory(
-      ProductType.headphone,
+      ProductType.neon,
       false,
       Icons.auto_awesome_mosaic,
     ),
     ProductCategory(
-      ProductType.tv,
+      ProductType.jewellery,
       false,
       Icons.auto_graph_sharp,
     ),
